@@ -9,8 +9,6 @@ type TGROperationsRequestFilters = {
   supNumber: string
 }
 
-console.log('test')
-
 export async function getOperationsList(
   _: TGROperationsRequestFilters // eslint-disable-line
 ): Promise<TGROperationsListRO> {
