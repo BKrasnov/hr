@@ -7,6 +7,7 @@
   },
   "scripts": {
     "webpack:dev": "export $(cat ./env/dev/* | xargs) && webpack serve --config __webpack__/dev.config.js --color",
+    "webpack:devWindows": "cross-env PROTOCOL=http & set PORT=3000& set HOST=localhost& set APP_NAME=test-app& set SOURCE_PATH=build& set ENTRY_POINT=test-app & webpack serve —config __webpack__/dev.config.js —color",
     "clean": "rd /s /q build",
     "prettier:write": "prettier src --write --list-different",
     "prettier:check": "prettier src --check",
