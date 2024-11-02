@@ -1,5 +1,9 @@
 import { TAgreement } from '../agreement'
 
+export type Supplier = {
+  id?: number;
+}
+
 export type TGROperation = {
   id: number
   agreementId: number
@@ -16,14 +20,15 @@ export type TGROperation = {
   supBuyAmountHV: string
   supNumber: null | string
   supShipmentDate: null | string
-  supplier: any
+  supplier: Supplier
   status: number
   sumSOQuantity: number
   sumQuantity: number
   positionsCount: number
-  repaymentPeriod: number
+  repaymentPeriod: number | null
   debt: number
   debtHV: string
+  manualNumber: number;
 }
 
 export type TGROperationCreateBody = {

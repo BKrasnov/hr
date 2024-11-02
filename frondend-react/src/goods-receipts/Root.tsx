@@ -1,10 +1,8 @@
-// PAGES
 import React from 'react'
-import { useStore } from 'react-redux'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
-// CORE COMMON
 import { GR_OPERATION_NEW } from 'core/common/routes'
+import { useTypedStore } from 'core/store/hooks'
 
 import NewOperationPage from './pages/new-operation/NewOperation'
 import {
@@ -13,11 +11,10 @@ import {
 } from './store/operations.gr'
 
 export default function Root() {
-  const store = useStore()
+  const store = useTypedStore()
   const isInjected = React.useRef(false)
 
   if (!isInjected.current) {
-    // @ts-ignore
     store.injectReducer(operationsModuleKey, operationsReducer)
     isInjected.current = true
   }
