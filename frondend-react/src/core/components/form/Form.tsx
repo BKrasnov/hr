@@ -7,6 +7,8 @@ import { Icon, Intent, Tag } from '@blueprintjs/core'
 import cn from 'classnames'
 import { isEqual as _isEqual } from 'lodash-es'
 
+import { DirtyFieldsMap, Note } from 'core/interfaces/forms'
+
 import InlineControls from '../inline-controls/InlineControls'
 import Styles from './Form.module.scss'
 
@@ -19,10 +21,11 @@ export function preventSubmit(e: React.KeyboardEvent): void {
 }
 
 export function getDirtyFormData(
-  values: { [key: string]: unknown },
-  dirtyFieldsMap: { [key: string]: boolean } = {}
-): { [key: string]: unknown } | null {
+  values: Record<string, unknown>,
+  dirtyFieldsMap: DirtyFieldsMap = {}
+): Record<string, unknown> | null {
   const formData = {}
+
   const changedFields = Object.keys(dirtyFieldsMap)
   if (changedFields.length === 0) {
     return null
@@ -129,7 +132,7 @@ type FormProps = {
 }
 
 type NoteOrErrorProps = {
-  note?: JSX.Element
+  note?: Note
   absolute?: boolean
   error?:
     | string
@@ -166,8 +169,11 @@ export class HTMLForm extends React.PureComponent<FormProps> {
     )
   }
 
-  static NoteOrError(props: NoteOrErrorProps): JSX.Element | null {
-    const { error, note, absolute } = props
+  static NoteOrError({
+    error,
+    note,
+    absolute,
+  }: NoteOrErrorProps): JSX.Element | null {
     if (error) {
       const message = typeof error === 'string' ? error : error.message
 
@@ -185,7 +191,7 @@ export class HTMLForm extends React.PureComponent<FormProps> {
         <ErrorTag />
       )
     }
-    if (note) return note
+    if (note) return <>{note}</>
     return null
   }
 

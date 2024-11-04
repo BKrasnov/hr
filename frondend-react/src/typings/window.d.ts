@@ -1,5 +1,6 @@
 // import { YM } from 'core/models'
 import { GlobalAppData } from 'core/models/app'
+
 // import { GlobalMessengerAppData } from 'core/models/messengerApp'
 
 declare global {

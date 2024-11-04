@@ -5,17 +5,15 @@ import { GR_OPERATION_NEW } from 'core/common/routes'
 import { useTypedStore } from 'core/store/hooks'
 
 import NewOperationPage from './pages/new-operation/NewOperation'
-import {
-  moduleKey as operationsModuleKey,
-  reducer as operationsReducer,
-} from './store/operations.gr'
+import { operationModel } from './store'
+import { moduleKey as operationsModuleKey } from './store/lib/config'
 
 export default function Root() {
   const store = useTypedStore()
   const isInjected = React.useRef(false)
 
   if (!isInjected.current) {
-    store.injectReducer(operationsModuleKey, operationsReducer)
+    store.injectReducer(operationsModuleKey, operationModel.reducer)
     isInjected.current = true
   }
 

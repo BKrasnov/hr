@@ -3,11 +3,13 @@ import React from 'react'
 import { Alert, Intent } from '@blueprintjs/core'
 import { IconNames } from '@blueprintjs/icons'
 
+import { TGROperationCreateBody } from 'core/models/goods-receipt/operation'
+
 type ExistOperationWithSupNumberAlertProps = {
   isOpen: boolean
   confirmAlert: () => void
   closeAlert: () => void
-  supNumber: string
+  supNumber: TGROperationCreateBody['supNumber']
 }
 
 const ExistOperationWithSupNumberAlert = ({

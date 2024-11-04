@@ -13,6 +13,8 @@ export const FIELD_REPAYMENT_PERIOD_TAKE_FROM_AGREEMENT =
 export const MIN_REPAYMENT_PERIOD = 0
 export const MAX_REPAYMENT_PERIOD = 365
 
+export const INVALID_CONTRACOR = -1
+
 /** Номер */
 export const FORM_NUMBER_LABEL = 'Номер'
 

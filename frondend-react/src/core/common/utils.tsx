@@ -73,3 +73,10 @@ export function highlightText(text: string, query: string): React.ReactNode[] {
   }
   return tokens
 }
+
+export function includes<Item>(
+  array: readonly Item[],
+  item: unknown
+): item is Item {
+  return array.includes(item as Item)
+}

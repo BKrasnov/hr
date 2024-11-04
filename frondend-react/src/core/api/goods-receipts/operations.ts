@@ -6,7 +6,7 @@ import {
 } from 'core/models/goods-receipt/operation'
 
 type TGROperationsRequestFilters = {
-  supNumber: string
+  supNumber: TGROperationCreateBody['supNumber']
 }
 
 export async function getOperationsList(
@@ -23,7 +23,10 @@ export async function getOperationsList(
         buyPriceAmount: 3,
         buyPriceAmountHV: '',
         createDate: '',
-        creator: '',
+        creator: {
+          id: 0,
+          name: '',
+        },
         debt: 3,
         debtHV: '',
         id: 0,
@@ -37,9 +40,17 @@ export async function getOperationsList(
         supBuyPriceAmount: 2,
         supBuyPriceAmountHV: '',
         supNumber: '',
-        supplier: '',
+        supplier: {
+          id: 0,
+        },
         supShipmentDate: '',
-        worker: '',
+        worker: {
+          id: 0,
+          name: '',
+        },
+        manualNumber: true,
+        repaymentPeriodTakeFromAgreement: false,
+        mixedAgreement: null,
       },
     ],
   }
@@ -56,7 +67,10 @@ export async function createOperation(
     buyPriceAmount: 3,
     buyPriceAmountHV: '',
     createDate: '',
-    creator: '',
+    creator: {
+      id: 0,
+      name: '',
+    },
     debt: 3,
     debtHV: '',
     id: 0,
@@ -70,8 +84,16 @@ export async function createOperation(
     supBuyPriceAmount: 2,
     supBuyPriceAmountHV: '',
     supNumber: '',
-    supplier: '',
+    supplier: {
+      id: 0,
+    },
     supShipmentDate: '',
-    worker: '',
+    worker: {
+      id: 0,
+      name: '',
+    },
+    manualNumber: true,
+    repaymentPeriodTakeFromAgreement: false,
+    mixedAgreement: null,
   }
 }

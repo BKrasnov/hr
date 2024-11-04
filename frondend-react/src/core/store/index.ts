@@ -48,15 +48,19 @@ const getInitialStore = () => {
       getDefaultMiddleware({ serializableCheck: false }).concat(
         routerMiddleware(browserHistory)
       ),
-  }) as ExtendedStore
+  })
 
   // Add a dictionary to keep track of the registered async reducers
+  // @ts-ignore
   store.asyncReducers = {}
 
   // Create an inject reducer function
   // This function adds the async reducer, and creates a new combined reducer
+  // @ts-ignore
   store.injectReducer = (key: string, asyncReducer: Reducer) => {
+    // @ts-ignore
     store.asyncReducers[key] = asyncReducer
+    // @ts-ignore
     store.replaceReducer(dynamicAddReducer(store.asyncReducers))
   }
 

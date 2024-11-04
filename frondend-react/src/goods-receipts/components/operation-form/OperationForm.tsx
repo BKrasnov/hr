@@ -41,9 +41,13 @@ import {
   MixedAgreementsSelectField, // SwitchField,
 } from 'core/components/form-fields'
 import { WhenFieldChanges } from 'core/components/form/Form'
+import { DirtyFieldsMap } from 'core/interfaces/forms'
 import { MixedAgreement } from 'core/models/agreement'
 import { ContractorTypes } from 'core/models/contractor'
-import { TGROperation } from 'core/models/goods-receipt/operation'
+import {
+  TGROperation,
+  TGROperationCreateBody,
+} from 'core/models/goods-receipt/operation'
 import { GR_STATUS_NEW } from 'core/models/goods-receipt/statuses'
 import { selectEmployees } from 'core/store/modules/stuff'
 import { TRootState } from 'core/store/types'
@@ -73,7 +77,8 @@ import {
   FORM_SUPPLIER_DATE_LABEL,
   FORM_SUPPLIER_LABEL,
   FORM_SUPPLIER_NUMBER_LABEL, // FORM_TAKE_FROM_AGREEMENT_LABEL,
-  FORM_WORKER_LABEL, // MAX_REPAYMENT_PERIOD,
+  FORM_WORKER_LABEL,
+  INVALID_CONTRACOR, // MAX_REPAYMENT_PERIOD,
   // MIN_REPAYMENT_PERIOD,
 } from './constants'
 import { CreateOperationButton } from './CreateOperationButton'
@@ -81,17 +86,15 @@ import ExistOperationWithSupNumberAlert from './ExistOperationWithSupNumberAlert
 
 // import Styles from './Styles.module.scss'
 
-interface IOperationFormRendererProps
-  // @ts-ignore
-  extends FormRenderProps<$Shape<TGROperation>> {
+interface IOperationFormRendererProps extends FormRenderProps<TGROperation> {
   isLoadingMixedAgreement: boolean
   isNew: boolean
   mixedAgreements: MixedAgreement[]
+  operation: TGROperation
 }
 
 function OperationFormRenderer({
   isNew,
-  // @ts-ignore
   operation,
   form,
   isLoadingMixedAgreement,
@@ -137,7 +140,7 @@ function OperationFormRenderer({
     (date) =>
       form.change(
         FIELD_CREATE_DATE,
-        isDate(date) ? moment(date).toISOString() : null
+        isDate(date) ? moment(date).toISOString() : undefined
       ),
     [form]
   )
@@ -237,13 +240,11 @@ function OperationFormRenderer({
                 labelInfo={<HTMLForm.RequiredSymbol />}
                 helperText={
                   <HTMLForm.NoteOrError
-                    // @ts-ignore
                     note={
                       isNew && values.manualNumber
                         ? FORM_NUMBER_NOTE_MANUAL
                         : FORM_NUMBER_NOTE_AUTO
                     }
-                    // @ts-ignore
                     error={meta.touched && meta.error}
                   />
                 }
@@ -326,7 +327,7 @@ function OperationFormRenderer({
           name={FIELD_MIXED_AGREEMENT}
           label={FORM_AGREEMENT_LABEL}
           required
-          contractorId={operation.supplier.id}
+          contractorId={operation.supplier.id ?? INVALID_CONTRACOR}
           disabled={operation.status !== GR_STATUS_NEW}
           contractorType={ContractorTypes.SUPPLIER}
           inputProps={{
@@ -350,10 +351,7 @@ function OperationFormRenderer({
             label={FORM_CREATE_DATE_LABEL}
             labelInfo={<HTMLForm.RequiredSymbol />}
             helperText={
-              <HTMLForm.NoteOrError
-                // @ts-ignore
-                error={meta.touched && meta.error}
-              />
+              <HTMLForm.NoteOrError error={meta.touched && meta.error} />
             }
           >
             <DateInput
@@ -456,7 +454,14 @@ function OperationFormRenderer({
               rightElement={
                 input.value && (
                   <Button
-                    onClick={() => form.change(input.name, null)}
+                    onClick={() => {
+                      console.log(
+                        '457: form.change(input.name, null)',
+                        input.name
+                      )
+                      // @ts-ignore
+                      form.change(input.name, null)
+                    }}
                     icon={IconNames.CROSS}
                     minimal
                   />
@@ -491,7 +496,14 @@ function OperationFormRenderer({
                 name: input.name,
                 rightElement: input.value && (
                   <Button
-                    onClick={() => form.change(input.name, null)}
+                    onClick={() => {
+                      console.log(
+                        '496 form.change(input.name, null)',
+                        input.name
+                      )
+                      // @ts-ignore
+                      form.change(input.name, null)
+                    }}
                     icon={IconNames.CROSS}
                     minimal
                   />
@@ -499,8 +511,7 @@ function OperationFormRenderer({
                 inputRef: supShipmentDateRef,
               }}
               timePrecision={TimePrecision.MINUTE}
-              // @ts-ignore
-              timePickerProps={{ fill: true }}
+              // timePickerProps={{ fill: true }}
               value={input.value ? moment(input.value).toDate() : null}
               formatDate={(date) => moment(date).format('DD.MM.YYYY HH:mm')}
               parseDate={(date) => moment(date, 'DD.MM.YYYY HH:mm').toDate()}
@@ -557,10 +568,15 @@ function OperationFormRenderer({
 const focusOnErrors = createDecorator()
 
 interface IOperationFormProps {
-  operation: TGROperation
-  // @ts-ignore
-  onSubmit: (formData: $Shape<TGROperation>) => Promise<void>
+  operation: Partial<TGROperation>
+  onSubmit: (formData: TGROperationCreateBody) => Promise<void>
 }
+
+type CheckOperationForExistSupNumberFuncType = (
+  supNumber: TGROperationCreateBody['supNumber'],
+  values: Partial<TGROperation>,
+  dirtyFields: DirtyFieldsMap
+) => Promise<void>
 
 export default function OperationForm({
   operation,
@@ -572,8 +588,7 @@ export default function OperationForm({
 
   // отформатированные значения формы
   const initialValues = React.useMemo(
-    // @ts-ignore
-    () => getInitialValues({ ...operation, mixedAgreement }),
+    () => getInitialValues({ ...operation }),
     [operation, mixedAgreement]
   )
 
@@ -586,7 +601,8 @@ export default function OperationForm({
   const [isVisibleAlert, setIsVisibleAlert] = React.useState(false)
 
   // Нормализованные значения формы необходимые для вывода внутри Alert
-  const [normalizedFormValues, setNormalizedFormValues] = React.useState({})
+  const [normalizedFormValues, setNormalizedFormValues] =
+    React.useState<TGROperationCreateBody>()
 
   // флаг создания новой сущности
   const isNew = React.useMemo(
@@ -596,7 +612,6 @@ export default function OperationForm({
 
   const [isLoading, setLoading] = React.useState(false)
 
-  // @ts-ignore
   const { agreement, supplier } = operation
 
   const fetchInitialMixedAgreement = async () => {
@@ -631,6 +646,7 @@ export default function OperationForm({
 
   // Фк-ция подтвержения сохранения формы при совпадении номера отгрузки с другими операциями приёмки
   const confirmAlert = React.useCallback(async () => {
+    if (!normalizedFormValues) return
     await onSubmit(normalizedFormValues)
   }, [onSubmit, normalizedFormValues])
 
@@ -641,41 +657,40 @@ export default function OperationForm({
 
   // Ф-кция проверяет номер отгрузки поставщика на совпадения с другими операциями приёмки
   // если есть совпадение, показывает Alert об этом
-  const checkOperationForExistSupNumber = React.useCallback(
-    async (supNumber, values, dirtyFields) => {
-      const operationsResponse = await grAPI.getOperationsList({ supNumber })
-      if (
-        operationsResponse.total &&
-        operationsResponse.list.some((op) => op.id !== operation?.id)
-      ) {
-        setNormalizedFormValues(normalize(values, dirtyFields))
-        setIsVisibleAlert(true)
-      } else {
-        await onSubmit(normalize(values, dirtyFields))
-      }
-    },
-    [onSubmit, operation]
-  )
+  const checkOperationForExistSupNumber =
+    React.useCallback<CheckOperationForExistSupNumberFuncType>(
+      async (supNumber, values, dirtyFields) => {
+        const operationsResponse = await grAPI.getOperationsList({ supNumber })
+        if (
+          operationsResponse.total &&
+          operationsResponse.list.some((op) => op.id !== operation?.id)
+        ) {
+          setNormalizedFormValues(normalize(values, dirtyFields))
+          setIsVisibleAlert(true)
+        } else {
+          await onSubmit(normalize(values, dirtyFields))
+        }
+      },
+      [onSubmit, operation]
+    )
 
   // функция сохранения формы
   const handleSubmit = React.useCallback(
-    // @ts-ignore
-    async (values: $Shape<TGROperation>, form: FormApi) => {
+    async (values: Partial<TGROperation>, form: FormApi) => {
       const { dirtyFields } = form.getState()
       try {
         // если введен номер отгрузки поставщика, и он не совпадает с текущим  номером отгрузки,
         // делаем запрос в API для поиска уже существующих операций с таким номером отгрузки
-        // @ts-ignore
         if (values.supNumber && values.supNumber !== operation.supNumber) {
           await checkOperationForExistSupNumber(
-            values.supNumber,
+            values.supNumber ?? '',
             values,
             dirtyFields
           )
         } else {
           await onSubmit(normalize(values, dirtyFields))
 
-          if (dirtyFields.mixedAgreement) {
+          if (values.mixedAgreement && dirtyFields.mixedAgreement) {
             setMixedAgreement(values.mixedAgreement)
           }
         }
@@ -694,8 +709,7 @@ export default function OperationForm({
           isOpen={isVisibleAlert}
           confirmAlert={confirmAlert}
           closeAlert={closeAlert}
-          // @ts-ignore
-          supNumber={normalizedFormValues.supNumber}
+          supNumber={normalizedFormValues?.supNumber ?? ''}
         />
       )}
       <Form

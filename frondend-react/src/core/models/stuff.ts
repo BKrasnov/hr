@@ -1,3 +1,4 @@
+/** Сотрудник штата. */
 export type TStuff = {
   id: number
   firstName: string

@@ -5,6 +5,7 @@ import {
   GR_POSITIONS_FROM_NEW_ORDERS,
   toPath,
 } from 'core/common/routes'
+import { includes } from 'core/common/utils'
 
 export const GR_CREATE_NEW_OP_TYPE_LOCAL_STORAGE_KEY =
   'goodsReceipts.createNewOpOption'
@@ -17,6 +18,9 @@ export enum CreateNewOpTypes {
 }
 
 export const DEFAULT_CREATE_NEW_TYPE = CreateNewOpTypes.ADD_POSITION_BY_ARTICLE
+
+export const isCreateNewOpType = (value: string): value is CreateNewOpTypes =>
+  includes(Object.values(CreateNewOpTypes), value)
 
 export const CREATE_NEW_OP_OPTIONS = Object.values(CreateNewOpTypes).map(
   (option) => {

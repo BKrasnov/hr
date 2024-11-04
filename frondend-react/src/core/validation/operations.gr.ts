@@ -1,12 +1,11 @@
 import * as Yup from 'yup'
 
 import { getValidateFormErrors } from 'core/common/utils'
+import { DirtyFieldsMap } from 'core/interfaces/forms'
 import { MixedAgreement, MixedAgreementShape } from 'core/models/agreement'
-import {
-  TGROperation,
-  TGROperationUpdateBody,
-} from 'core/models/goods-receipt/operation'
+import { TGROperation } from 'core/models/goods-receipt/operation'
 import { PersonSchema, TPerson } from 'core/models/person'
+import { TStuff } from 'core/models/stuff'
 
 import {
   CREATE_DATE_VALIDATION_EMPTY_TITLE,
@@ -48,7 +47,6 @@ export const GROperationSchema = Yup.object().shape({
   mixedAgreement: MixedAgreementShape.nullable()
     .default(null)
     .required(SUPPLIER_VALIDATION_EMPTY_TITLE),
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   createDate: Yup.string()
     .required(CREATE_DATE_VALIDATION_EMPTY_TITLE)
     .nullable()
@@ -99,21 +97,21 @@ export function getInitialValues(
       context: { values: operation, ...context },
     }
   )
-  // @ts-ignore
   return {
     ...formValues,
     manualNumber: formValues?.id !== undefined && !!formValues?.number,
   }
 }
 
-export function normalize(
-  operation: Partial<TGROperation> = {},
-  context: Partial<TGROperation> = {}
-): TGROperationUpdateBody {
+export function normalize<T>(
+  operation: Partial<TStuff> = {},
+  context: Partial<DirtyFieldsMap> = {}
+): T {
+  /** Тут жесть, я тут не буду править, а просто прокину дженерик. */
   const casted = GROperationAPISchema.cast(operation, {
     stripUnknown: true,
     context: { values: operation, ...context },
-  }) as TGROperationUpdateBody
+  }) as T
 
   return {
     ...casted,

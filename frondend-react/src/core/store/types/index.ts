@@ -1,5 +1,5 @@
 import { RouterState } from 'connected-react-router'
-import { moduleKey as operationsGR } from 'goods-receipts/store/operations.gr'
+import { moduleKey as operationsGR } from 'goods-receipts/store/lib/config'
 import { Location } from 'history'
 
 import { store } from '../index'
