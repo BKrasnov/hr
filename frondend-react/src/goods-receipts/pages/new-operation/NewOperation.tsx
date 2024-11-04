@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { shallowEqual, useDispatch, useSelector } from 'react-redux'
+import { shallowEqual, useSelector } from 'react-redux'
 
 import { Card } from '@blueprintjs/core'
 
@@ -8,9 +8,10 @@ import {
   DEFAULT_CREATE_NEW_TYPE,
   getLinkAfterSuccessCreation,
   GR_CREATE_NEW_OP_TYPE_LOCAL_STORAGE_KEY,
+  isCreateNewOpType,
 } from 'goods-receipts/components/operation-form/common'
 import OperationForm from 'goods-receipts/components/operation-form/OperationForm'
-import { createOperation } from 'goods-receipts/store/operations.gr'
+import { operationModel } from 'goods-receipts/store'
 import moment from 'moment'
 
 import { isNotCancelRequest } from 'core/common/api'
@@ -23,6 +24,11 @@ import {
   PageHeader,
   PageLayout,
 } from 'core/components'
+import {
+  TGROperation,
+  TGROperationCreateBody,
+} from 'core/models/goods-receipt/operation'
+import { useAppDispatch } from 'core/store/hooks'
 import { selectCurrentEmployeeId } from 'core/store/modules/common'
 import { selectEmployeeById } from 'core/store/modules/stuff'
 import { TRootState } from 'core/store/types'
@@ -31,14 +37,13 @@ import LayoutStyles from 'core/styles/layout.module.scss'
 import NewOperationBreadcrumbs from './NewOperationBreadcrumbs'
 
 export default function NewOperationPage() {
-  // STORE CONNECT
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
+
   const mapState = (state: TRootState) =>
     selectEmployeeById(state, selectCurrentEmployeeId(state))
   const currentEmployee = useSelector(mapState, shallowEqual)
 
-  // начальные значения формы
-  const operationDraft = {
+  const operationDraft: Partial<TGROperation> = {
     manualNumber: false,
     worker: currentEmployee,
     creator: currentEmployee,
@@ -46,11 +51,11 @@ export default function NewOperationPage() {
     repaymentPeriod: null,
   }
 
-  // ACTIONS
-  // @ts-ignore
-  const handleCreateOperation = async (formData) => {
+  const handleCreateOperation = async (formData: TGROperationCreateBody) => {
     try {
-      const result = await dispatch(createOperation(formData))
+      const result = await dispatch(
+        operationModel.thunks.createAsync(formData)
+      ).unwrap()
 
       AppToaster.success({
         message: 'Операция успешно создана',
@@ -60,11 +65,11 @@ export default function NewOperationPage() {
         appStorage.getItem(GR_CREATE_NEW_OP_TYPE_LOCAL_STORAGE_KEY) ||
         DEFAULT_CREATE_NEW_TYPE
 
+      if (!isCreateNewOpType(savedOption)) return
+
       const newPositionUrl = getLinkAfterSuccessCreation(
-        // @ts-ignore
         savedOption,
-        // @ts-ignore
-        result.id
+        result.id.toString()
       )
 
       dispatch(push(newPositionUrl))
@@ -86,7 +91,6 @@ export default function NewOperationPage() {
         </PageHeader>
         <Card elevation={1} className={LayoutStyles.MainCard}>
           <OperationForm
-            // @ts-ignore
             operation={operationDraft}
             onSubmit={handleCreateOperation}
           />
