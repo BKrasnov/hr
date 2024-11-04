@@ -1,9 +1,10 @@
+import { createSelector } from '@reduxjs/toolkit'
+
 import { ModuleSelector } from 'core/interfaces/utils'
 import { TRootState } from 'core/store/types'
 import { TStateOperationsGR } from 'core/store/types/good-receipts/operations'
 
 import { moduleKey } from './lib/config'
-import { createSelector } from '@reduxjs/toolkit'
 
 function moduleSelector<T extends unknown[], R>(
   selector: ModuleSelector<TStateOperationsGR, T, R>

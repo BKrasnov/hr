@@ -4,41 +4,33 @@ import { Field, Form, FormRenderProps, FormSpy } from 'react-final-form'
 import { shallowEqual, useSelector } from 'react-redux'
 
 import {
-  // Alignment,
   Button,
-  Classes,
-  ControlGroup,
   FormGroup,
-  InputGroup,
-  Intent, // Tag,
+  Intent,
 } from '@blueprintjs/core'
 import { DateInput, TimePrecision } from '@blueprintjs/datetime'
 import { IconNames } from '@blueprintjs/icons'
-import { Tooltip2 } from '@blueprintjs/popover2'
 
-// import cn from 'classnames'
 import { FORM_ERROR, FormApi } from 'final-form'
 import createDecorator from 'final-form-focus'
 import {
-  isDate, //  isNil
+  isDate, 
 } from 'lodash-es'
 import moment from 'moment'
 
 import ContractorsApi from 'core/api/contractors'
 import grAPI from 'core/api/goods-receipts'
 import { localeUtils } from 'core/common/date'
-import { getFormFieldId } from 'core/common/forms'
+import { useFocusOnEnterKeyDown } from 'core/common/hooks/useBlurOnEnterKey'
 import logger from 'core/common/logger'
 import {
-  CopyNumberButton,
   EmployeeSelect,
   ErrorAlert,
   HTMLForm,
 } from 'core/components'
 import {
-  // FloatNumberField,
   MixedAgreementsField,
-  MixedAgreementsSelectField, // SwitchField,
+  MixedAgreementsSelectField,
 } from 'core/components/form-fields'
 import { WhenFieldChanges } from 'core/components/form/Form'
 import { DirtyFieldsMap } from 'core/interfaces/forms'
@@ -65,26 +57,20 @@ import {
   FIELD_NUMBER,
   FIELD_REPAYMENT_PERIOD,
   FIELD_REPAYMENT_PERIOD_TAKE_FROM_AGREEMENT,
-  FIELD_SUP_NUMBER,
   FIELD_SUP_SHIPMENT_DATE,
   FIELD_WORKER,
   FORM_AGREEMENT_LABEL,
   FORM_CREATE_DATE_LABEL,
   FORM_CREATOR_LABEL,
-  FORM_NUMBER_LABEL,
-  FORM_NUMBER_NOTE_AUTO,
-  FORM_NUMBER_NOTE_MANUAL, // FORM_REPAYMENT_PERIOD_LABEL,
   FORM_SUPPLIER_DATE_LABEL,
   FORM_SUPPLIER_LABEL,
-  FORM_SUPPLIER_NUMBER_LABEL, // FORM_TAKE_FROM_AGREEMENT_LABEL,
   FORM_WORKER_LABEL,
-  INVALID_CONTRACOR, // MAX_REPAYMENT_PERIOD,
-  // MIN_REPAYMENT_PERIOD,
+  INVALID_CONTRACOR,
 } from './constants'
 import { CreateOperationButton } from './CreateOperationButton'
 import ExistOperationWithSupNumberAlert from './ExistOperationWithSupNumberAlert'
-
-// import Styles from './Styles.module.scss'
+import { NumberField } from './fields/NumberField'
+import { SupplierShipmentNumberField } from './fields/SupplierShipmentNumberField'
 
 interface IOperationFormRendererProps extends FormRenderProps<TGROperation> {
   isLoadingMixedAgreement: boolean
@@ -104,19 +90,19 @@ function OperationFormRenderer({
   const maxDate = React.useMemo(() => new Date(), [])
 
   const timerRef = useRef<number | null>(null)
-  const numberRef = useRef<HTMLInputElement | null>(null)
+
   const mixedAgreementsRef = useRef<HTMLInputElement | null>(null)
+  const numberEnterLogic =
+    useFocusOnEnterKeyDown<HTMLInputElement>(mixedAgreementsRef)
+
   const workerRef = useRef<HTMLInputElement | null>(null)
   const workerInputRef = useRef<HTMLInputElement | null>(null)
   const creatorRef = useRef<HTMLInputElement | null>(null)
   const creatorInputRef = useRef<HTMLInputElement | null>(null)
   const createDateRef = useRef<HTMLInputElement | null>(null)
-  const supNumberRef = useRef<HTMLInputElement | null>(null)
   const supShipmentDateRef = useRef<HTMLInputElement | null>(null)
-  // const repaymentPeriodRef = useRef<HTMLInputElement | null>(null)
-  // const repaymentPeriodTakeFromAgreementRef = useRef<HTMLInputElement | null>(
-  //   null
-  // )
+  const supplierShipmentNumberEnterLogic =
+    useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
   const submitButtonRef = useRef<HTMLInputElement | null>(null)
 
   const { values } = form.getState()
@@ -169,136 +155,63 @@ function OperationFormRenderer({
     }
   }
 
-  const handleOnEnter = (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
+  // /**  */
+  // const handleOnEnter = (e: KeyboardEvent) => {
+  //   if (e.key === 'Enter') {
+  //     e.preventDefault()
+  //     console.log(e.target)
+  //     if (e.target === numberRef.current) {
+  //       if (mixedAgreementsRef.current !== null) {
+  //         mixedAgreementsRef.current.focus()
+  //       } else {
+  //         // @ts-ignore
+  //         createDateRef.current.focus()
+  //       }
+  //     }
 
-      if (e.target === numberRef.current) {
-        if (mixedAgreementsRef.current !== null) {
-          mixedAgreementsRef.current.focus()
-        } else {
-          // @ts-ignore
-          createDateRef.current.focus()
-        }
-      }
+  //     if (e.target === mixedAgreementsRef.current) {
+  //       // @ts-ignore
+  //       timerRef.current = setTimeout(() => createDateRef.current.focus(), 500)
+  //     }
 
-      if (e.target === mixedAgreementsRef.current) {
-        // @ts-ignore
-        timerRef.current = setTimeout(() => createDateRef.current.focus(), 500)
-      }
+  //     if (e.target === createDateRef.current) {
+  //       // @ts-ignore
+  //       timerRef.current = setTimeout(() => workerRef.current.focus(), 200)
+  //     }
 
-      if (e.target === createDateRef.current) {
-        // @ts-ignore
-        timerRef.current = setTimeout(() => workerRef.current.focus(), 200)
-      }
+  //     if (e.target === workerInputRef.current) {
+  //       // @ts-ignore
+  //       timerRef.current = setTimeout(() => creatorRef.current.focus(), 200)
+  //     }
 
-      if (e.target === workerInputRef.current) {
-        // @ts-ignore
-        timerRef.current = setTimeout(() => creatorRef.current.focus(), 200)
-      }
+  //     if (e.target === creatorInputRef.current) {
+  //       // @ts-ignore
+  //       timerRef.current = setTimeout(() => supNumberRef.current.focus(), 200)
+  //     }
 
-      if (e.target === creatorInputRef.current) {
-        // @ts-ignore
-        timerRef.current = setTimeout(() => supNumberRef.current.focus(), 200)
-      }
+  //     if (e.target === supNumberRef.current) {
+  //       // @ts-ignore
+  //       supShipmentDateRef.current.focus()
+  //     }
 
-      if (e.target === supNumberRef.current) {
-        // @ts-ignore
-        supShipmentDateRef.current.focus()
-      }
-
-      if (e.target === supShipmentDateRef.current) {
-        // @ts-ignore
-        submitButtonRef.current.focus()
-      }
-    }
-  }
-
-  useEffect(() => {
-    // @ts-ignore
-    return () => clearTimeout(timerRef.current)
-  }, [])
+  //     if (e.target === supShipmentDateRef.current) {
+  //       // @ts-ignore
+  //       submitButtonRef.current.focus()
+  //     }
+  //   }
+  // }
 
   useEffect(() => {
-    document.addEventListener('keydown', handleOnEnter)
-
     return () => {
-      document.removeEventListener('keydown', handleOnEnter)
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current)
+      }
     }
   }, [])
 
   return (
     <HTMLForm onSubmit={handleSubmit} fill>
-      <FormSpy
-        subscription={{ values: true }}
-        render={({ values }) => (
-          <Field
-            name={FIELD_NUMBER}
-            render={({ input, meta }) => (
-              <FormGroup
-                label={FORM_NUMBER_LABEL}
-                labelInfo={<HTMLForm.RequiredSymbol />}
-                helperText={
-                  <HTMLForm.NoteOrError
-                    note={
-                      isNew && values.manualNumber
-                        ? FORM_NUMBER_NOTE_MANUAL
-                        : FORM_NUMBER_NOTE_AUTO
-                    }
-                    error={meta.touched && meta.error}
-                  />
-                }
-              >
-                <ControlGroup>
-                  <InputGroup
-                    disabled={
-                      meta.submitting || (isNew && !values.manualNumber)
-                    }
-                    name={FIELD_NUMBER}
-                    id={getFormFieldId(FIELD_NUMBER)}
-                    value={input.value}
-                    onChange={input.onChange}
-                    autoFocus={!isNew}
-                    className={Classes.FILL}
-                    inputRef={numberRef}
-                    // @ts-ignore
-                    rightElement={
-                      isNew && (
-                        <Tooltip2
-                          content={
-                            values.manualNumber
-                              ? 'генерировать автоматически'
-                              : 'ввести вручную'
-                          }
-                        >
-                          <Button
-                            minimal
-                            intent={Intent.PRIMARY}
-                            onClick={() =>
-                              form.change(
-                                FIELD_MANUAL_NUMBER,
-                                !values.manualNumber
-                              )
-                            }
-                            icon={values.manualNumber ? 'unlock' : 'lock'}
-                          />
-                        </Tooltip2>
-                      )
-                    }
-                  />
-                  {!isNew && (
-                    <CopyNumberButton
-                      number={input.value}
-                      small={false}
-                      minimal={false}
-                    />
-                  )}
-                </ControlGroup>
-              </FormGroup>
-            )}
-          />
-        )}
-      />
+      <NumberField isNew={isNew} enterLogic={numberEnterLogic} form={form} />
 
       <WhenFieldChanges
         field={FIELD_MANUAL_NUMBER}
@@ -389,7 +302,6 @@ function OperationFormRenderer({
             labelInfo={<HTMLForm.RequiredSymbol />}
             helperText={
               <HTMLForm.NoteOrError
-                // @ts-ignore
                 error={meta.touched && meta.error}
               />
             }
@@ -434,43 +346,9 @@ function OperationFormRenderer({
           </FormGroup>
         )}
       />
-      <Field
-        name={FIELD_SUP_NUMBER}
-        render={({ input, meta }) => (
-          <FormGroup
-            label={FORM_SUPPLIER_NUMBER_LABEL}
-            helperText={
-              <HTMLForm.NoteOrError
-                // @ts-ignore
-                error={meta.touched && meta.error}
-              />
-            }
-          >
-            <InputGroup
-              type="text"
-              onChange={(e) => form.change(FIELD_SUP_NUMBER, e.target.value)}
-              value={input.value || ''}
-              disabled={meta.submitting}
-              rightElement={
-                input.value && (
-                  <Button
-                    onClick={() => {
-                      console.log(
-                        '457: form.change(input.name, null)',
-                        input.name
-                      )
-                      // @ts-ignore
-                      form.change(input.name, null)
-                    }}
-                    icon={IconNames.CROSS}
-                    minimal
-                  />
-                )
-              }
-              inputRef={supNumberRef}
-            />
-          </FormGroup>
-        )}
+      <SupplierShipmentNumberField
+        form={form}
+        enterLogic={supplierShipmentNumberEnterLogic}
       />
       <Field
         name={FIELD_SUP_SHIPMENT_DATE}
