@@ -26,11 +26,8 @@ export function SelectWorkerField({
     [form]
   )
 
-  const mapStateToProps = (state: TRootState) => ({
-    employees: selectEmployees(state),
-  })
-
-  const { employees } = useSelector(mapStateToProps, shallowEqual)
+  const mapStateToProps = (state: TRootState) => selectEmployees(state)
+  const employees = useSelector(mapStateToProps, shallowEqual)
 
   return (
     <Field
@@ -51,7 +48,6 @@ export function SelectWorkerField({
             onSelect={handleSelectWorker}
             isClearButtonShow={false}
             inputRef={enterLogic.inputRef}
-            //   buttonRef={workerRef}
           />
         </FormGroup>
       )}

@@ -26,11 +26,8 @@ export function SelectCreatorField({
     [form]
   )
 
-  const mapStateToProps = (state: TRootState) => ({
-    employees: selectEmployees(state),
-  })
-
-  const { employees } = useSelector(mapStateToProps, shallowEqual)
+  const mapStateToProps = (state: TRootState) => selectEmployees(state)
+  const employees = useSelector(mapStateToProps, shallowEqual)
 
   return (
     <Field
