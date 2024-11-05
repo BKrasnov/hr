@@ -44,15 +44,17 @@ import { NumberField } from './fields/NumberField'
 import { SelectCreatorField } from './fields/SelectCreatorField'
 import { SelectWorkerField } from './fields/SelectWorkerField'
 import { SupplierShipmentNumberField } from './fields/SupplierShipmentNumberField'
+import { OperationFormWrapper } from './OperationFormWrapper'
 
-interface IOperationFormRendererProps extends FormRenderProps<TGROperation> {
+export interface IOperationFormRendererProps
+  extends FormRenderProps<TGROperation> {
   isLoadingMixedAgreement: boolean
   isNew: boolean
   mixedAgreements: MixedAgreement[]
   operation: TGROperation
 }
 
-function OperationFormRenderer({
+export function OperationFormRenderer({
   isNew,
   operation,
   form,
@@ -66,7 +68,8 @@ function OperationFormRenderer({
 
   const submitButtonRef = useRef<HTMLButtonElement | null>(null)
   const supShipmentDateRef = useRef<HTMLInputElement | null>(null)
-  const creatorEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
+  const creatorEnterLogic =
+    useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
   const workerEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
     creatorEnterLogic.inputRef
   )
@@ -81,7 +84,6 @@ function OperationFormRenderer({
   )
   const supplierShipmentNumberEnterLogic =
     useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
-
 
   const handleChangeSupShipmentDate = React.useCallback(
     (date) =>
@@ -359,13 +361,13 @@ export default function OperationForm({
         decorators={[focusOnErrors]}
         onSubmit={handleSubmit}
         initialValues={initialValues}
-        // @ts-ignore
-        component={OperationFormRenderer}
         validate={validate}
         operation={operation}
         isLoadingMixedAgreement={isLoading}
         mixedAgreements={mixedAgreements}
-      />
+      >
+        {OperationFormWrapper}
+      </Form>
     </>
   )
 }
