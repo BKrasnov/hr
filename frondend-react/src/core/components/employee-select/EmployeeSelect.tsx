@@ -55,6 +55,7 @@ export type EmployeeSelectProps = {
   isClearButtonShow?: boolean
   inputRef?: { current: HTMLInputElement | null }
   buttonRef?: { current: HTMLButtonElement | null }
+  onKeyDownCapture: React.KeyboardEventHandler<HTMLInputElement> | undefined
 }
 
 const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
@@ -65,6 +66,7 @@ const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
   isClearButtonShow = true,
   inputRef,
   buttonRef,
+  onKeyDownCapture,
 }) => {
   const valueObj = React.useMemo(() => {
     if (value === null) return null
@@ -141,6 +143,7 @@ const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
             placeholder: '',
             onKeyDown: handleClosePopover,
             inputRef,
+            onKeyDownCapture,
           }}
           onItemSelect={onSelect}
           ref={selectRef}
@@ -163,7 +166,6 @@ const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
             )}
             rightIcon="double-caret-vertical"
             elementRef={buttonRef}
-            onKeyDownCapture={() => console.log('key down')}
           />
         </Select>
         {canShowClearButton && (
