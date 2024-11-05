@@ -47,6 +47,7 @@ export interface IMixedAgreementsAutocompleteProps {
   isClearButtonShow?: boolean
   allowCreate?: boolean
   inputRef?: { current: HTMLInputElement | null }
+  onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
 }
 
 export default function MixedAgreementsAutocomplete({

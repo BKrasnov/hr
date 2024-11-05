@@ -1,21 +1,14 @@
 import * as React from 'react'
 import { useEffect, useRef } from 'react'
 import { Field, Form, FormRenderProps, FormSpy } from 'react-final-form'
-import { shallowEqual, useSelector } from 'react-redux'
 
-import {
-  Button,
-  FormGroup,
-  Intent,
-} from '@blueprintjs/core'
+import { Button, FormGroup, Intent } from '@blueprintjs/core'
 import { DateInput, TimePrecision } from '@blueprintjs/datetime'
 import { IconNames } from '@blueprintjs/icons'
 
 import { FORM_ERROR, FormApi } from 'final-form'
 import createDecorator from 'final-form-focus'
-import {
-  isDate, 
-} from 'lodash-es'
+import { isDate } from 'lodash-es'
 import moment from 'moment'
 
 import ContractorsApi from 'core/api/contractors'
@@ -23,26 +16,14 @@ import grAPI from 'core/api/goods-receipts'
 import { localeUtils } from 'core/common/date'
 import { useFocusOnEnterKeyDown } from 'core/common/hooks/useBlurOnEnterKey'
 import logger from 'core/common/logger'
-import {
-  EmployeeSelect,
-  ErrorAlert,
-  HTMLForm,
-} from 'core/components'
-import {
-  MixedAgreementsField,
-  MixedAgreementsSelectField,
-} from 'core/components/form-fields'
+import { ErrorAlert, HTMLForm } from 'core/components'
 import { WhenFieldChanges } from 'core/components/form/Form'
 import { DirtyFieldsMap } from 'core/interfaces/forms'
 import { MixedAgreement } from 'core/models/agreement'
-import { ContractorTypes } from 'core/models/contractor'
 import {
   TGROperation,
   TGROperationCreateBody,
 } from 'core/models/goods-receipt/operation'
-import { GR_STATUS_NEW } from 'core/models/goods-receipt/statuses'
-import { selectEmployees } from 'core/store/modules/stuff'
-import { TRootState } from 'core/store/types'
 import {
   getInitialValues,
   normalize,
@@ -50,26 +31,18 @@ import {
 } from 'core/validation/operations.gr'
 
 import {
-  FIELD_CREATE_DATE,
-  FIELD_CREATOR,
   FIELD_MANUAL_NUMBER,
-  FIELD_MIXED_AGREEMENT,
   FIELD_NUMBER,
-  FIELD_REPAYMENT_PERIOD,
-  FIELD_REPAYMENT_PERIOD_TAKE_FROM_AGREEMENT,
   FIELD_SUP_SHIPMENT_DATE,
-  FIELD_WORKER,
-  FORM_AGREEMENT_LABEL,
-  FORM_CREATE_DATE_LABEL,
-  FORM_CREATOR_LABEL,
   FORM_SUPPLIER_DATE_LABEL,
-  FORM_SUPPLIER_LABEL,
-  FORM_WORKER_LABEL,
-  INVALID_CONTRACOR,
 } from './constants'
 import { CreateOperationButton } from './CreateOperationButton'
 import ExistOperationWithSupNumberAlert from './ExistOperationWithSupNumberAlert'
+import { CreateDateField } from './fields/CreateDateField'
+import { MixedAgreementsFieldContainer } from './fields/MixedAgreementsFieldContainer'
 import { NumberField } from './fields/NumberField'
+import { SelectCreatorField } from './fields/SelectCreatorField'
+import { SelectWorkerField } from './fields/SelectWorkerField'
 import { SupplierShipmentNumberField } from './fields/SupplierShipmentNumberField'
 
 interface IOperationFormRendererProps extends FormRenderProps<TGROperation> {
@@ -87,49 +60,30 @@ function OperationFormRenderer({
   handleSubmit,
   mixedAgreements,
 }: IOperationFormRendererProps) {
-  const maxDate = React.useMemo(() => new Date(), [])
+  const maxDate = new Date()
 
   const timerRef = useRef<number | null>(null)
 
-  const mixedAgreementsRef = useRef<HTMLInputElement | null>(null)
-  const numberEnterLogic =
-    useFocusOnEnterKeyDown<HTMLInputElement>(mixedAgreementsRef)
+  const creatorEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>()
+  const workerEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
+    creatorEnterLogic.inputRef
+  )
+  const createDateLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
+    workerEnterLogic.inputRef
+  )
+  const mixedAgreementsLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
+    createDateLogic.inputRef
+  )
+  const numberEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
+    mixedAgreementsLogic.inputRef
+  )
 
-  const workerRef = useRef<HTMLInputElement | null>(null)
-  const workerInputRef = useRef<HTMLInputElement | null>(null)
-  const creatorRef = useRef<HTMLInputElement | null>(null)
-  const creatorInputRef = useRef<HTMLInputElement | null>(null)
-  const createDateRef = useRef<HTMLInputElement | null>(null)
   const supShipmentDateRef = useRef<HTMLInputElement | null>(null)
+
   const supplierShipmentNumberEnterLogic =
     useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
   const submitButtonRef = useRef<HTMLInputElement | null>(null)
 
-  const { values } = form.getState()
-
-  const mapStateToProps = (state: TRootState) => ({
-    employees: selectEmployees(state),
-  })
-
-  const { employees } = useSelector(mapStateToProps, shallowEqual)
-
-  const handleSelectCreator = React.useCallback(
-    (creator) => form.change(FIELD_CREATOR, creator),
-    [form]
-  )
-  const handleSelectWorker = React.useCallback(
-    (worker) => form.change(FIELD_WORKER, worker),
-    [form]
-  )
-
-  const handleChangeCreateDate = React.useCallback(
-    (date) =>
-      form.change(
-        FIELD_CREATE_DATE,
-        isDate(date) ? moment(date).toISOString() : undefined
-      ),
-    [form]
-  )
   const handleChangeSupShipmentDate = React.useCallback(
     (date) =>
       form.change(
@@ -138,68 +92,6 @@ function OperationFormRenderer({
       ),
     [form]
   )
-
-  const handleChangeMixedAgreement = (agreement: MixedAgreement | null) => {
-    if (values[FIELD_REPAYMENT_PERIOD_TAKE_FROM_AGREEMENT] === true) {
-      form.change(FIELD_REPAYMENT_PERIOD, agreement?.repaymentPeriod)
-    }
-  }
-
-  const dateInputRef = useRef<DateInput>(null)
-
-  const handleDateBlur = () => {
-    if (dateInputRef.current) {
-      dateInputRef.current.setState({
-        isOpen: false,
-      })
-    }
-  }
-
-  // /**  */
-  // const handleOnEnter = (e: KeyboardEvent) => {
-  //   if (e.key === 'Enter') {
-  //     e.preventDefault()
-  //     console.log(e.target)
-  //     if (e.target === numberRef.current) {
-  //       if (mixedAgreementsRef.current !== null) {
-  //         mixedAgreementsRef.current.focus()
-  //       } else {
-  //         // @ts-ignore
-  //         createDateRef.current.focus()
-  //       }
-  //     }
-
-  //     if (e.target === mixedAgreementsRef.current) {
-  //       // @ts-ignore
-  //       timerRef.current = setTimeout(() => createDateRef.current.focus(), 500)
-  //     }
-
-  //     if (e.target === createDateRef.current) {
-  //       // @ts-ignore
-  //       timerRef.current = setTimeout(() => workerRef.current.focus(), 200)
-  //     }
-
-  //     if (e.target === workerInputRef.current) {
-  //       // @ts-ignore
-  //       timerRef.current = setTimeout(() => creatorRef.current.focus(), 200)
-  //     }
-
-  //     if (e.target === creatorInputRef.current) {
-  //       // @ts-ignore
-  //       timerRef.current = setTimeout(() => supNumberRef.current.focus(), 200)
-  //     }
-
-  //     if (e.target === supNumberRef.current) {
-  //       // @ts-ignore
-  //       supShipmentDateRef.current.focus()
-  //     }
-
-  //     if (e.target === supShipmentDateRef.current) {
-  //       // @ts-ignore
-  //       submitButtonRef.current.focus()
-  //     }
-  //   }
-  // }
 
   useEffect(() => {
     return () => {
@@ -212,144 +104,28 @@ function OperationFormRenderer({
   return (
     <HTMLForm onSubmit={handleSubmit} fill>
       <NumberField isNew={isNew} enterLogic={numberEnterLogic} form={form} />
-
       <WhenFieldChanges
         field={FIELD_MANUAL_NUMBER}
         becomes={false}
         set={FIELD_NUMBER}
         to=""
       />
-
-      {isNew ? (
-        <MixedAgreementsField
-          name={FIELD_MIXED_AGREEMENT}
-          label={FORM_SUPPLIER_LABEL}
-          required
-          inputProps={{
-            isClearButtonShow: false,
-            autoFocus: true,
-            contractorType: ContractorTypes.SUPPLIER,
-            loadImmediately: true,
-            minQueryLength: 0,
-            inputRef: mixedAgreementsRef,
-          }}
-          onChange={handleChangeMixedAgreement}
-        />
-      ) : (
-        <MixedAgreementsSelectField
-          name={FIELD_MIXED_AGREEMENT}
-          label={FORM_AGREEMENT_LABEL}
-          required
-          contractorId={operation.supplier.id ?? INVALID_CONTRACOR}
-          disabled={operation.status !== GR_STATUS_NEW}
-          contractorType={ContractorTypes.SUPPLIER}
-          inputProps={{
-            isClearButtonShow: false,
-            loading: isLoadingMixedAgreement,
-          }}
-          // @ts-ignore
-          elementRef={
-            operation.status !== GR_STATUS_NEW ? null : mixedAgreementsRef
-          }
-          options={mixedAgreements}
-          onChange={handleChangeMixedAgreement}
-        />
-      )}
-
-      <Field
-        name={FIELD_CREATE_DATE}
-        allowNull
-        render={({ input, meta }) => (
-          <FormGroup
-            label={FORM_CREATE_DATE_LABEL}
-            labelInfo={<HTMLForm.RequiredSymbol />}
-            helperText={
-              <HTMLForm.NoteOrError error={meta.touched && meta.error} />
-            }
-          >
-            <DateInput
-              disabled={meta.submitting}
-              showActionsBar
-              todayButtonText={'Сегодня'}
-              clearButtonText={'Очистить'}
-              maxDate={maxDate}
-              onChange={handleChangeCreateDate}
-              inputProps={{
-                name: input.name,
-                inputRef: createDateRef,
-                onBlur: handleDateBlur,
-              }}
-              timePrecision={TimePrecision.MINUTE}
-              // @ts-ignore
-              timePickerProps={{ fill: true }}
-              value={input.value ? moment(input.value).toDate() : null}
-              formatDate={(date) => moment(date).format('DD.MM.YYYY HH:mm')}
-              parseDate={(date) => moment(date, 'DD.MM.YYYY HH:mm').toDate()}
-              popoverProps={{ wrapperTagName: 'div', targetTagName: 'div' }}
-              ref={dateInputRef}
-              // @ts-ignore
-              dayPickerProps={{ localeUtils }}
-            />
-          </FormGroup>
-        )}
+      <MixedAgreementsFieldContainer
+        isNew={isNew}
+        operation={operation}
+        isLoadingMixedAgreement={isLoadingMixedAgreement}
+        mixedAgreements={mixedAgreements}
+        form={form}
+        enterLogic={mixedAgreementsLogic}
       />
-      <Field
-        allowNull
-        name={FIELD_WORKER}
-        render={({ input, meta }) => (
-          <FormGroup
-            label={FORM_WORKER_LABEL}
-            labelInfo={<HTMLForm.RequiredSymbol />}
-            helperText={
-              <HTMLForm.NoteOrError
-                error={meta.touched && meta.error}
-              />
-            }
-          >
-            <EmployeeSelect
-              value={input.value}
-              disabled={meta.submitting}
-              options={employees}
-              onSelect={handleSelectWorker}
-              isClearButtonShow={false}
-              inputRef={workerInputRef}
-              // @ts-ignore
-              buttonRef={workerRef}
-            />
-          </FormGroup>
-        )}
-      />
-      <Field
-        allowNull
-        name={FIELD_CREATOR}
-        render={({ input, meta }) => (
-          <FormGroup
-            label={FORM_CREATOR_LABEL}
-            labelInfo={<HTMLForm.RequiredSymbol />}
-            helperText={
-              <HTMLForm.NoteOrError
-                // @ts-ignore
-                error={meta.touched && meta.error}
-              />
-            }
-          >
-            <EmployeeSelect
-              value={input.value}
-              disabled={meta.submitting}
-              options={employees}
-              onSelect={handleSelectCreator}
-              isClearButtonShow={false}
-              inputRef={creatorInputRef}
-              // @ts-ignore
-              buttonRef={creatorRef}
-            />
-          </FormGroup>
-        )}
-      />
+      <CreateDateField form={form} enterLogic={createDateLogic} />
+      <SelectWorkerField form={form} enterLogic={workerEnterLogic} />
+      <SelectCreatorField form={form} enterLogic={creatorEnterLogic} />
       <SupplierShipmentNumberField
         form={form}
         enterLogic={supplierShipmentNumberEnterLogic}
       />
+
       <Field
         name={FIELD_SUP_SHIPMENT_DATE}
         allowNull
@@ -358,7 +134,6 @@ function OperationFormRenderer({
             label={FORM_SUPPLIER_DATE_LABEL}
             helperText={
               <HTMLForm.NoteOrError
-                // @ts-ignore
                 error={meta.touched && meta.error}
               />
             }
@@ -375,12 +150,7 @@ function OperationFormRenderer({
                 rightElement: input.value && (
                   <Button
                     onClick={() => {
-                      console.log(
-                        '496 form.change(input.name, null)',
-                        input.name
-                      )
-                      // @ts-ignore
-                      form.change(input.name, null)
+                      form.change(input.name as keyof TGROperation, null)
                     }}
                     icon={IconNames.CROSS}
                     minimal

@@ -44,7 +44,7 @@ function EmployeeSelectItem({
   )
 }
 
-type EmployeeSelectProps = {
+export type EmployeeSelectProps = {
   disabled?: boolean
   options: Array<IEmployee>
   onSelect: (
@@ -163,6 +163,7 @@ const EmployeeSelect: React.FC<EmployeeSelectProps> = ({
             )}
             rightIcon="double-caret-vertical"
             elementRef={buttonRef}
+            onKeyDownCapture={() => console.log('key down')}
           />
         </Select>
         {canShowClearButton && (
