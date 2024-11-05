@@ -39,12 +39,7 @@ export function SupplierShipmentNumberField({
               input.value && (
                 <Button
                   onClick={() => {
-                    console.log(
-                      '457: form.change(input.name, null)',
-                      input.name
-                    )
-                    // @ts-ignore
-                    form.change(input.name, null)
+                    form.change(input.name as keyof TGROperation, null)
                   }}
                   icon={IconNames.CROSS}
                   minimal

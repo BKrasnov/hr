@@ -70,8 +70,6 @@ export function CreateDateField({
               onKeyDown: enterLogic.onKeyDownHandler,
             }}
             timePrecision={TimePrecision.MINUTE}
-            // @ts-ignore
-            timePickerProps={{ fill: true }}
             value={input.value ? moment(input.value).toDate() : null}
             formatDate={(date) => moment(date).format('DD.MM.YYYY HH:mm')}
             parseDate={(date) => moment(date, 'DD.MM.YYYY HH:mm').toDate()}

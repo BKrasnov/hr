@@ -74,10 +74,6 @@ export function MixedAgreementsFieldContainer({
             isClearButtonShow: false,
             loading: isLoadingMixedAgreement,
           }}
-          // @ts-ignore
-          elementRef={
-            operation.status !== GR_STATUS_NEW ? null : enterLogic.inputRef
-          }
           options={mixedAgreements}
           onChange={handleChangeMixedAgreement}
         />

@@ -48,6 +48,7 @@ export function SelectWorkerField({
             onSelect={handleSelectWorker}
             isClearButtonShow={false}
             inputRef={enterLogic.inputRef}
+            onKeyDownCapture={enterLogic.onKeyDownHandler}
           />
         </FormGroup>
       )}

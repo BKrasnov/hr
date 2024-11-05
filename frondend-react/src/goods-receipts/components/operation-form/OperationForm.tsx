@@ -64,7 +64,9 @@ function OperationFormRenderer({
 
   const timerRef = useRef<number | null>(null)
 
-  const creatorEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>()
+  const submitButtonRef = useRef<HTMLButtonElement | null>(null)
+  const supShipmentDateRef = useRef<HTMLInputElement | null>(null)
+  const creatorEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
   const workerEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
     creatorEnterLogic.inputRef
   )
@@ -77,12 +79,9 @@ function OperationFormRenderer({
   const numberEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
     mixedAgreementsLogic.inputRef
   )
-
-  const supShipmentDateRef = useRef<HTMLInputElement | null>(null)
-
   const supplierShipmentNumberEnterLogic =
     useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
-  const submitButtonRef = useRef<HTMLInputElement | null>(null)
+
 
   const handleChangeSupShipmentDate = React.useCallback(
     (date) =>
@@ -187,7 +186,6 @@ function OperationFormRenderer({
                 <CreateOperationButton
                   loading={submitting}
                   disabled={submitting || (!isNew && pristine)}
-                  // @ts-ignore
                   elementRef={submitButtonRef}
                   onSubmit={form.submit}
                 />
@@ -198,7 +196,6 @@ function OperationFormRenderer({
                   loading={submitting}
                   disabled={submitting || (!isNew && pristine)}
                   text={'Сохранить'}
-                  // @ts-ignore
                   elementRef={submitButtonRef}
                 />
               )}

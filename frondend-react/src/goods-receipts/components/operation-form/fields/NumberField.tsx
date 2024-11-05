@@ -66,9 +66,8 @@ export function NumberField({
                   className={Classes.FILL}
                   inputRef={inputRef}
                   onKeyDown={onKeyDownHandler}
-                  // @ts-ignore
                   rightElement={
-                    isNew && (
+                    isNew ? (
                       <Tooltip2
                         content={
                           values.manualNumber
@@ -88,7 +87,7 @@ export function NumberField({
                           icon={values.manualNumber ? 'unlock' : 'lock'}
                         />
                       </Tooltip2>
-                    )
+                    ) : undefined
                   }
                 />
                 {!isNew && (

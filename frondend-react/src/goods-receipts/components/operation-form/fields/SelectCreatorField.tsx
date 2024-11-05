@@ -48,7 +48,7 @@ export function SelectCreatorField({
             onSelect={handleSelectCreator}
             isClearButtonShow={false}
             inputRef={enterLogic.inputRef}
-            //   buttonRef={creatorRef}
+            onKeyDownCapture={enterLogic.onKeyDownHandler}
           />
         </FormGroup>
       )}
