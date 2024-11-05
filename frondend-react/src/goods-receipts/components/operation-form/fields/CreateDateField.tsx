@@ -36,7 +36,6 @@ export function CreateDateField({
   const dateInputRef = useRef<DateInput>(null)
 
   const handleDateBlur = () => {
-    console.log('handleDateBlur')
     if (dateInputRef.current) {
       dateInputRef.current.setState({
         isOpen: false,

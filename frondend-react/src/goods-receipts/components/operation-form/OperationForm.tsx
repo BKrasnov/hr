@@ -68,20 +68,26 @@ export function OperationFormRenderer({
 
   const submitButtonRef = useRef<HTMLButtonElement | null>(null)
   const supShipmentDateRef = useRef<HTMLInputElement | null>(null)
+
   const creatorEnterLogic =
     useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
+
   const workerEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
     creatorEnterLogic.inputRef
   )
+
   const createDateLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
     workerEnterLogic.inputRef
   )
+
   const mixedAgreementsLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
     createDateLogic.inputRef
   )
+
   const numberEnterLogic = useFocusOnEnterKeyDown<HTMLInputElement>(
     mixedAgreementsLogic.inputRef
   )
+
   const supplierShipmentNumberEnterLogic =
     useFocusOnEnterKeyDown<HTMLInputElement>(supShipmentDateRef)
 
